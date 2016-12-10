@@ -12,8 +12,8 @@ import MapView, { MAP_TYPES } from 'react-native-maps';
 const { width, height } = Dimensions.get('window');
 
 const ASPECT_RATIO = width / height;
-const LATITUDE = 37.78825;
-const LONGITUDE = -122.4324;
+const LATITUDE = 44.78825;
+const LONGITUDE = -100.4324;
 const LATITUDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
@@ -24,10 +24,10 @@ class DisplayLatLng extends React.Component {
     this.state = {
       region: {
         latitude: LATITUDE,
-        longitude: LONGITUDE,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA,
-      },
+        longitude: LONGITUDE
+        // latitudeDelta: LATITUDE_DELTA,
+        // longitudeDelta: LONGITUDE_DELTA,
+      }
     };
   }
 
@@ -35,21 +35,32 @@ class DisplayLatLng extends React.Component {
     this.setState({ region });
   }
 
-  jumpRandom() {
-    this.setState({ region: this.randomRegion() });
-  }
+  watchID: ?number = null;
 
-  animateRandom() {
-    this.map.animateToRegion(this.randomRegion());
-  }
+  componentDidMount() {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
 
-  randomRegion() {
-    const { region } = this.state;
-    return {
-      ...this.state.region,
-      latitude: region.latitude + ((Math.random() - 0.5) * (region.latitudeDelta / 2)),
-      longitude: region.longitude + ((Math.random() - 0.5) * (region.longitudeDelta / 2)),
-    };
+        console.log("debug1", position.coords.latitude);
+
+        this.setState({
+          region: { latitude: position.coords.latitude,
+                    longitude: position.coords.longitude}
+        });
+          console.log(this.state.region);
+
+      },
+      (error) => alert(JSON.stringify(error)),
+      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+    );
+    this.watchID = navigator.geolocation.watchPosition((position) => {
+      // var lastPosition = JSON.stringify(position);
+
+      this.setState({
+          region: { latitude: position.coords.latitude,
+                    longitude: position.coords.longitude }
+      });
+    });
   }
 
   render() {
@@ -63,27 +74,12 @@ class DisplayLatLng extends React.Component {
           showsUserLocation={true}
           followsUserLocation={true}
           initialRegion={this.state.region}
-          onRegionChange={region => this.onRegionChange(region)}
         />
         <View style={[styles.bubble, styles.latlng]}>
           <Text style={{ textAlign: 'center' }}>
             {this.state.region.latitude.toPrecision(7)},
             {this.state.region.longitude.toPrecision(7)}
           </Text>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            onPress={() => this.jumpRandom()}
-            style={[styles.bubble, styles.button]}
-          >
-            <Text>Jump</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => this.animateRandom()}
-            style={[styles.bubble, styles.button]}
-          >
-            <Text>Animate</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
