@@ -12,11 +12,12 @@ import {
   View
 } from 'react-native';
 import DisplayLatLng from './Views/DisplayLatLng'
+import Callouts from './Views/Callouts'
 
 export default class Parkme extends Component {
   render() {
     return (
-      <DisplayLatLng />
+      <Callouts />
     );
   }
 }
